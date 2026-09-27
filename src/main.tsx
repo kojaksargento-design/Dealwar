@@ -1,5 +1,6 @@
 import { Toaster } from "@/components/ui/sonner";
 import { RequireAuth } from "@/components/RequireAuth";
+import { LanguageProvider } from "@/lib/i18n";
 import { VlyToolbar } from "../vly-toolbar-readonly.tsx";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
@@ -23,6 +24,7 @@ const Trending = lazy(() => import("./pages/Trending.tsx"));
 const Business = lazy(() => import("./pages/Business.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
 const Owner = lazy(() => import("./pages/Owner.tsx"));
+const Victory = lazy(() => import("./pages/Victory.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
 const Layout = lazy(() => import("@/components/dealwar/Layout.tsx").then((m) => ({ default: m.Layout })));
 
@@ -132,6 +134,7 @@ createRoot(document.getElementById("root")!).render(
         <VlyToolbar />
       </ToolbarErrorBoundary>
       <ConvexAuthProvider client={convex}>
+        <LanguageProvider>
         <BrowserRouter>
           <RouteSyncer />
           <Suspense fallback={<RouteLoading />}>
@@ -145,6 +148,7 @@ createRoot(document.getElementById("root")!).render(
               {/* Public pages */}
               <Route element={<Layout />}>
                 <Route path="/wars" element={<Wars />} />
+              <Route path="/victory" element={<Victory />} />
                 <Route path="/war/:slug" element={<WarDetail />} />
                 <Route path="/trending" element={<Trending />} />
                 <Route path="/ranking" element={<Ranking />} />
@@ -221,6 +225,7 @@ createRoot(document.getElementById("root")!).render(
             </Routes>
           </Suspense>
         </BrowserRouter>
+        </LanguageProvider>
         <Toaster />
       </ConvexAuthProvider>
     </RootErrorBoundary>
