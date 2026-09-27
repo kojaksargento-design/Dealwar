@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ShieldAlert, Check, X, Star, Ban, Euro, Plus } from "lucide-react";
+import { ShieldAlert, Check, X, Star, Ban, Euro, Plus, Trophy } from "lucide-react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import { eur, timeAgo } from "@/lib/format";
@@ -30,6 +30,7 @@ export default function Admin() {
   const campaigns = useQuery(api.moderation.listCampaignsAdmin, ready ? {} : "skip");
   const wars = useQuery(api.moderation.listWarsAdmin, ready ? {} : "skip");
   const users = useQuery(api.moderation.listUsers, ready ? {} : "skip");
+  const prizeClaims = useQuery(api.purchasePrize.listPendingAdmin, ready ? {} : "skip");
 
   const approve = useMutation(api.moderation.approveSubmission);
   const reject = useMutation(api.moderation.rejectSubmission);
@@ -37,6 +38,8 @@ export default function Admin() {
   const suspend = useMutation(api.moderation.setUserSuspended);
   const resolveReport = useMutation(api.moderation.resolveReport);
   const createStore = useMutation(api.moderation.createStore);
+  const approveClaim = useMutation(api.purchasePrize.approveClaim);
+  const rejectClaim = useMutation(api.purchasePrize.rejectClaim);
 
   const [storeName, setStoreName] = useState("");
   const [storeSite, setStoreSite] = useState("");
@@ -158,6 +161,7 @@ export default function Admin() {
             <TabsTrigger value="wars">Wars</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="reports">Reports</TabsTrigger>
+            <TabsTrigger value="prizes">Prémios</TabsTrigger>
             <TabsTrigger value="stores">Stores</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
@@ -334,6 +338,68 @@ export default function Admin() {
                   </Button>
                   <Button size="sm" variant="outline" className="glass rounded-xl font-bold" onClick={() => resolveReport({ reportId: r._id as never, outcome: "dismissed" })}>
                     Dismiss
+                  </Button>
+                </div>
+              </article>
+            ))}
+          </TabsContent>
+
+          <TabsContent value="prizes" className="mt-4 flex flex-col gap-3">
+            {prizeClaims?.length === 0 && (
+              <p className="glass rounded-3xl p-6 text-sm text-muted-foreground">
+                Sem reclamações de prémio de compra pendentes.
+              </p>
+            )}
+            {prizeClaims?.map((c) => (
+              <article key={c._id} className="glass flex flex-wrap items-center gap-4 rounded-3xl p-5">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold">
+                    🥇 {c.storeName}
+                    {c.amountPaid ? ` · ${eur(c.amountPaid)}` : ""}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    <a
+                      href={c.proofUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-bold text-primary hover:underline"
+                    >
+                      ver comprovativo
+                    </a>
+                    {" · "}
+                    {timeAgo(c.createdAt)}
+                  </p>
+                  {c.note && <p className="mt-1 text-xs text-muted-foreground">{c.note}</p>}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="rounded-xl font-bold"
+                    onClick={async () => {
+                      try {
+                        await approveClaim({ claimId: c._id as never });
+                        toast("Prémio aprovado: emblema Vitória + 250 XP atribuídos.");
+                      } catch (err) {
+                        toast.error(err instanceof Error ? err.message : "Erro.");
+                      }
+                    }}
+                  >
+                    <Trophy className="mr-1 size-4" /> Aprovar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="glass rounded-xl font-bold"
+                    onClick={async () => {
+                      try {
+                        await rejectClaim({ claimId: c._id as never });
+                        toast("Reclamação recusada.");
+                      } catch (err) {
+                        toast.error(err instanceof Error ? err.message : "Erro.");
+                      }
+                    }}
+                  >
+                    <X className="mr-1 size-4" /> Recusar
                   </Button>
                 </div>
               </article>
