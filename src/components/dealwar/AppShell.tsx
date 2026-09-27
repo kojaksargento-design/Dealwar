@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import { useI18n } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/lib/i18n";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Logo } from "@/components/dealwar/Logo";
@@ -29,27 +31,28 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const desktopNav = [
-  { to: "/", label: "HOME", icon: Home },
-  { to: "/wars", label: "EXPLORE", icon: Compass },
-  { to: "/trending", label: "TRENDING", icon: Flame },
-  { to: "/ranking", label: "RANKING", icon: Trophy },
-  { to: "/business", label: "BUSINESS", icon: Briefcase },
-  { to: "/profile", label: "PROFILE", icon: User },
-];
-
-const mobileNav = [
-  { to: "/", label: "HOME", icon: Home },
-  { to: "/wars", label: "WARS", icon: Swords },
-  { to: "/create", label: "CREATE", icon: Plus, primary: true },
-  { to: "/ranking", label: "RANKING", icon: Trophy },
-  { to: "/profile", label: "PROFILE", icon: User },
-];
-
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user, signOut } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const desktopNav = [
+    { to: "/", label: t("navHome"), icon: Home },
+    { to: "/wars", label: t("navExplore"), icon: Compass },
+    { to: "/trending", label: t("navTrending"), icon: Flame },
+    { to: "/ranking", label: t("navRanking"), icon: Trophy },
+    { to: "/business", label: t("navBusiness"), icon: Briefcase },
+    { to: "/profile", label: t("navProfile"), icon: User },
+  ];
+
+  const mobileNav = [
+    { to: "/", label: t("navHome"), icon: Home },
+    { to: "/wars", label: t("navWars"), icon: Swords },
+    { to: "/create", label: t("navCreate"), icon: Plus, primary: true },
+    { to: "/ranking", label: t("navRanking"), icon: Trophy },
+    { to: "/profile", label: t("navProfile"), icon: User },
+  ];
 
   const notifications = useQuery(
     api.notifications.listMine,
@@ -90,6 +93,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="flex items-center gap-2">
+            <LanguageSwitcher />
             {isAuthenticated && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -108,20 +112,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <DropdownMenuContent align="end" className="glass-strong w-80">
                   <div className="flex items-center justify-between px-3 py-2">
                     <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      Notifications
+                      {t("notifications")}
                     </span>
                     {unread > 0 && (
                       <button
                         className="text-xs font-medium text-primary hover:underline"
                         onClick={() => markAllRead({})}
                       >
-                        Mark all read
+                        {t("markAllRead")}
                       </button>
                     )}
                   </div>
                   {notifications && notifications.length === 0 && (
                     <p className="px-3 pb-3 text-sm text-muted-foreground">
-                      No notifications yet.
+                      {t("noNotifications")}
                     </p>
                   )}
                   <div className="max-h-72 overflow-y-auto">
@@ -152,7 +156,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <DropdownMenuTrigger asChild>
                   <button
                     className="glass-subtle flex items-center gap-2 rounded-full py-1 pl-1 pr-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    aria-label="Account menu"
+                    aria-label={t("accountMenu")}
                   >
                     <span className="flex size-7 items-center justify-center rounded-full bg-primary/15 text-sm">
                       {user?.name?.[0]?.toUpperCase() ?? "?"}
@@ -162,13 +166,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="glass-strong">
                   <DropdownMenuItem onClick={() => navigate("/profile")}>
-                    <User className="mr-2 size-4" /> Profile
+                    <User className="mr-2 size-4" /> {t("profile")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
-                    <Bell className="mr-2 size-4" /> Settings
+                    <Bell className="mr-2 size-4" /> {t("settings")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/victory")}>
+                    <Trophy className="mr-2 size-4" /> {t("vcTitle")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/owner")}>
-                    <Activity className="mr-2 size-4" /> Owner dashboard
+                    <Activity className="mr-2 size-4" /> {t("ownerDashboard")}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={async () => {
@@ -176,7 +183,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       navigate("/");
                     }}
                   >
-                    <LogOut className="mr-2 size-4" /> Sign out
+                    <LogOut className="mr-2 size-4" /> {t("signOut")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -186,7 +193,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 className="rounded-full font-bold"
                 onClick={() => navigate("/auth?returnTo=%2F")}
               >
-                Sign in
+                {t("enter")}
               </Button>
             )}
 
@@ -226,7 +233,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-foreground/80 hover:bg-primary/10"
                 onClick={() => setMenuOpen(false)}
               >
-                <Flame className="size-4" /> MISSIONS
+                <Flame className="size-4" /> {t("navMissions")}
+              </Link>
+              <Link
+                to="/victory"
+                className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-foreground/80 hover:bg-primary/10"
+                onClick={() => setMenuOpen(false)}
+              >
+                <Trophy className="size-4" /> {t("vcTitle")}
               </Link>
             </div>
           </nav>
