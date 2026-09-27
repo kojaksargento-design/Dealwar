@@ -6,15 +6,38 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link, useNavigate } from "react-router";
-import { Search, Swords, ArrowRight, Crosshair, Trophy } from "lucide-react";
+import { Search, Swords, ArrowRight, Crosshair, Trophy, ShieldCheck, Zap, Medal, Target, BadgeCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 const STEPS = [
-  { n: 1, title: "Find a product", desc: "Spot any product with a price worth beating." },
-  { n: 2, title: "Start a War", desc: "Set the price to beat and open the battlefield." },
-  { n: 3, title: "Beat the price", desc: "Hunters submit lower verified prices." },
-  { n: 4, title: "Share your win", desc: "Generate your win card and challenge everyone." },
+  { n: 1, title: "Acha um produto", desc: "Vês um produto com um preço que merece ser batido." },
+  { n: 2, title: "Lança a Guerra", desc: "Define o preço a bater e abre o campo de batalha." },
+  { n: 3, title: "Caça o preço", desc: "Os caçadores procuram mais barato e submetem com prova." },
+  { n: 4, title: "Partilha a vitória", desc: "Gera o teu cartão de vitória e desafia toda a gente." },
+];
+
+const XP_ACTIONS = [
+  { icon: Swords, label: "Lançar uma guerra", xp: "+10" },
+  { icon: Target, label: "Entrar numa caça", xp: "+5" },
+  { icon: BadgeCheck, label: "Descobrir um preço", xp: "+50" },
+  { icon: Zap, label: "Bater o preço", xp: "+100" },
+  { icon: Medal, label: "Partilhar a vitória", xp: "+2" },
+];
+
+const LEVELS = [
+  { name: "Bronze", min: 0 },
+  { name: "Prata", min: 150 },
+  { name: "Ouro", min: 400 },
+  { name: "Diamante", min: 900 },
+  { name: "Lenda", min: 2000 },
+];
+
+const RULES = [
+  "Todos os preços submetidos ficam pendentes de verificação — nada é publicado sem aprovação.",
+  "Prova obrigatória: link da loja e imagem. Sem prova, sem pontos.",
+  "Os pontos (XP) são virtuais — não são dinheiro e não podem ser comprados.",
+  "Os ganhos da plataforma começam em €0.00 e só crescem com conversões reais.",
 ];
 
 export default function Landing() {
@@ -48,16 +71,16 @@ export default function Landing() {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Logo />
           <nav className="hidden items-center gap-6 text-xs font-bold tracking-wide text-muted-foreground md:flex">
-            <Link to="/wars" className="hover:text-foreground">EXPLORE</Link>
-            <Link to="/trending" className="hover:text-foreground">TRENDING</Link>
+            <Link to="/wars" className="hover:text-foreground">EXPLORAR</Link>
+            <Link to="/trending" className="hover:text-foreground">TENDÊNCIAS</Link>
             <Link to="/ranking" className="hover:text-foreground">RANKING</Link>
           </nav>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" className="rounded-full font-semibold" asChild>
-              <Link to="/auth?returnTo=%2Fprofile">Sign in</Link>
+              <Link to="/auth?returnTo=%2Fprofile">Entrar</Link>
             </Button>
             <Button size="sm" className="rounded-full font-bold" asChild>
-              <Link to="/auth?returnTo=%2Fcreate">CREATE WAR</Link>
+              <Link to="/auth?returnTo=%2Fcreate">CRIAR GUERRA</Link>
             </Button>
           </div>
         </div>
@@ -72,7 +95,7 @@ export default function Landing() {
             transition={{ duration: 0.5 }}
             className="glass flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-[0.25em] text-primary"
           >
-            <Crosshair className="size-3.5" /> The Price Battle
+            <Crosshair className="size-3.5" /> A Guerra dos Preços
           </motion.div>
 
           <motion.h1
@@ -90,8 +113,8 @@ export default function Landing() {
             transition={{ duration: 0.5, delay: 0.16 }}
             className="mt-4 text-lg font-semibold text-muted-foreground md:text-xl"
           >
-            Find a deal. <span className="text-foreground">Beat the price.</span>{" "}
-            <span className="text-primary">Win the war.</span>
+            Acha a promoção. <span className="text-foreground">Bate o preço.</span>{" "}
+            <span className="text-primary">Ganha a guerra.</span>
           </motion.p>
 
           <motion.form
@@ -106,11 +129,11 @@ export default function Landing() {
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search a product..."
-              aria-label="Search a product"
+              placeholder="Procura um produto..."
+              aria-label="Procura um produto"
               className="h-10 border-0 bg-transparent shadow-none focus-visible:ring-0"
             />
-            <Button type="submit" className="rounded-xl font-bold">Search</Button>
+            <Button type="submit" className="rounded-xl font-bold">Procurar</Button>
           </motion.form>
 
           <motion.div
@@ -121,7 +144,7 @@ export default function Landing() {
           >
             <Button size="lg" className="rounded-2xl px-8 font-black tracking-wide" asChild>
               <Link to="/wars">
-                EXPLORE WARS <ArrowRight className="ml-2 size-4" />
+                EXPLORAR GUERRAS <ArrowRight className="ml-2 size-4" />
               </Link>
             </Button>
             <Button
@@ -131,17 +154,17 @@ export default function Landing() {
               asChild
             >
               <Link to="/auth?returnTo=%2Fcreate">
-                <Swords className="mr-2 size-4" /> CREATE WAR
+                <Swords className="mr-2 size-4" /> CRIAR GUERRA
               </Link>
             </Button>
           </motion.div>
         </div>
       </section>
 
-      {/* How it works */}
+      {/* Como funciona */}
       <section className="mx-auto max-w-6xl px-4 py-10">
         <h2 className="text-center text-xs font-black uppercase tracking-[0.3em] text-muted-foreground">
-          How it works
+          Como funciona
         </h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((s) => (
@@ -156,15 +179,89 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Daily war */}
+      {/* Ganha XP. Sobe de nivel. */}
+      <section className="mx-auto max-w-6xl px-4 py-10">
+        <h2 className="text-center text-xs font-black uppercase tracking-[0.3em] text-muted-foreground">
+          Ganha XP. Sobe de nível.
+        </h2>
+        <p className="mx-auto mt-2 max-w-xl text-center text-sm text-muted-foreground">
+          Cada ação no campo de batalha rende pontos. Sobe de nível, desbloqueia emblemas e conquista o topo do ranking.
+        </p>
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          {/* Pontos XP */}
+          <div className="glass glass-hover rounded-3xl p-5">
+            <div className="flex items-center gap-2">
+              <Zap className="size-4 text-primary" />
+              <h3 className="font-bold">Como ganhar XP</h3>
+            </div>
+            <ul className="mt-3 flex flex-col gap-2">
+              {XP_ACTIONS.map((a) => (
+                <li key={a.label} className="flex items-center gap-2 text-sm">
+                  <a.icon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
+                  <span className="text-muted-foreground">{a.label}</span>
+                  <span className="ml-auto font-black text-primary">{a.xp}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          {/* Niveis */}
+          <div className="glass glass-hover rounded-3xl p-5">
+            <div className="flex items-center gap-2">
+              <Trophy className="size-4 text-primary" />
+              <h3 className="font-bold">Níveis de caçador</h3>
+            </div>
+            <ul className="mt-3 flex flex-col gap-2">
+              {LEVELS.map((l) => (
+                <li key={l.name} className="flex items-center gap-2 text-sm">
+                  <span className="font-bold">{l.name}</span>
+                  <span className="ml-auto text-muted-foreground">{l.min} XP</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          {/* Emblemas e missoes */}
+          <div className="glass glass-hover rounded-3xl p-5">
+            <div className="flex items-center gap-2">
+              <Medal className="size-4 text-primary" />
+              <h3 className="font-bold">Emblemas e missões</h3>
+            </div>
+            <ul className="mt-3 flex flex-col gap-2 text-sm text-muted-foreground">
+              <li>🏆 10 emblemas para desbloquear — da primeira guerra às sequências lendárias.</li>
+              <li>🎯 5 missões diárias com recompensas em XP.</li>
+              <li>🔥 Streaks diários: entra todos os dias e não quebras a sequência.</li>
+              <li>⚔️ Guerra do Dia: uma batalha em destaque, todos os dias.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Regras de honestidade */}
+      <section className="mx-auto max-w-6xl px-4 py-6">
+        <div className="glass-strong rounded-3xl p-6 md:p-8">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="size-5 text-primary" />
+            <h2 className="text-lg font-black tracking-tight">Sem truques. Sem números falsos.</h2>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {RULES.map((r) => (
+              <p key={r} className="flex items-start gap-2 text-sm text-muted-foreground">
+                <BadgeCheck className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                {r}
+              </p>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Guerra do dia */}
       {daily && (
         <section className="mx-auto max-w-6xl px-4 py-6">
           <div className="glass-strong relative overflow-hidden rounded-3xl p-6 md:p-8">
             <span className="absolute right-6 top-6 rounded-full bg-primary px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-white">
-              Daily War
+              Guerra do Dia
             </span>
             <p className="text-xs font-black uppercase tracking-[0.3em] text-primary">
-              ⚔️ Battle of the day
+              ⚔️ Batalha do dia
             </p>
             <h2 className="mt-2 max-w-lg text-2xl font-black tracking-tight md:text-3xl">
               {daily.title}
@@ -175,25 +272,25 @@ export default function Landing() {
                 <p className="text-xl font-black line-through">{(daily.originalPrice / 100).toFixed(2)}€</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Best verified</p>
+                <p className="text-xs text-muted-foreground">Melhor verificado</p>
                 <p className="text-3xl font-black tracking-tighter text-emerald-600">
                   {(daily.bestPrice / 100).toFixed(2)}€
                 </p>
               </div>
               <Button className="ml-auto rounded-xl font-black tracking-wide" asChild>
-                <Link to={`/war/${daily.slug}`}>BEAT THIS PRICE</Link>
+                <Link to={`/war/${daily.slug}`}>BATE ESTE PREÇO</Link>
               </Button>
             </div>
           </div>
         </section>
       )}
 
-      {/* Live wars */}
+      {/* Guerras ativas */}
       <section className="mx-auto max-w-6xl px-4 py-10">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-black tracking-tight">LIVE WARS</h2>
+          <h2 className="text-xl font-black tracking-tight">GUERRAS ATIVAS</h2>
           <Link to="/wars" className="flex items-center gap-1 text-sm font-bold text-primary hover:underline">
-            See all <ArrowRight className="size-4" />
+            Ver todas <ArrowRight className="size-4" />
           </Link>
         </div>
         <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -203,12 +300,12 @@ export default function Landing() {
             ))}
           {openWars?.length === 0 && (
             <div className="glass col-span-full rounded-3xl p-8 text-center">
-              <p className="font-bold">No wars yet.</p>
+              <p className="font-bold">Ainda não há guerras.</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Create the first Price War.
+                Cria a primeira Guerra de Preços.
               </p>
               <Button className="mt-4 rounded-xl font-bold" asChild>
-                <Link to="/auth?returnTo=%2Fcreate">CREATE WAR</Link>
+                <Link to="/auth?returnTo=%2Fcreate">CRIAR GUERRA</Link>
               </Button>
             </div>
           )}
@@ -216,19 +313,19 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Trending + Top hunters */}
+      {/* Tendencias + Top cacadores */}
       <section className="mx-auto grid max-w-6xl gap-8 px-4 py-10 lg:grid-cols-2">
         <div>
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black tracking-tight">TRENDING</h2>
+            <h2 className="text-xl font-black tracking-tight">TENDÊNCIAS</h2>
             <Link to="/trending" className="text-sm font-bold text-primary hover:underline">
-              More
+              Mais
             </Link>
           </div>
           <div className="mt-5 flex flex-col gap-4">
             {trending?.length === 0 && (
               <p className="glass rounded-2xl p-5 text-sm text-muted-foreground">
-                No trending wars yet — activity will appear here as hunters join.
+                Ainda não há tendências — aparecem aqui à medida que os caçadores entram.
               </p>
             )}
             {trending?.map((w) => <WarCard key={w._id} war={w} compact />)}
@@ -237,7 +334,7 @@ export default function Landing() {
 
         <div>
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black tracking-tight">TOP HUNTERS</h2>
+            <h2 className="text-xl font-black tracking-tight">TOP CAÇADORES</h2>
             <Link to="/ranking" className="flex items-center gap-1 text-sm font-bold text-primary hover:underline">
               <Trophy className="size-4" /> Ranking
             </Link>
@@ -245,7 +342,7 @@ export default function Landing() {
           <div className="glass mt-5 rounded-3xl p-4">
             {topHunters?.rows.length === 0 && (
               <p className="p-3 text-sm text-muted-foreground">
-                No hunters ranked yet. Be the first.
+                Ainda não há caçadores no ranking. Sê o primeiro.
               </p>
             )}
             <ol className="flex flex-col">
@@ -288,15 +385,15 @@ export default function Landing() {
       <section className="mx-auto max-w-6xl px-4 pb-24 pt-6">
         <div className="glass-strong relative overflow-hidden rounded-3xl px-6 py-14 text-center md:py-20">
           <h2 className="mx-auto max-w-2xl text-3xl font-black tracking-tight md:text-5xl">
-            Think you can find a lower price?
+            Achas que encontras mais barato?
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            Join the community of hunters. Earn XP, climb the global ranking and
-            win your first Price War today.
+            Junta-te à comunidade de caçadores. Ganha XP, sobe no ranking global e
+            vence a tua primeira Guerra de Preços hoje.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <Button size="lg" className="rounded-2xl px-8 font-black tracking-wide" asChild>
-              <Link to="/auth?returnTo=%2Fwars">JOIN THE WAR</Link>
+              <Link to="/auth?returnTo=%2Fwars">ENTRA NA GUERRA</Link>
             </Button>
             <Button
               size="lg"
@@ -304,7 +401,7 @@ export default function Landing() {
               className="glass rounded-2xl px-8 font-black tracking-wide"
               asChild
             >
-              <Link to="/wars">EXPLORE WARS</Link>
+              <Link to="/wars">EXPLORAR GUERRAS</Link>
             </Button>
           </div>
         </div>
@@ -315,12 +412,12 @@ export default function Landing() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-xs text-muted-foreground sm:flex-row">
           <Logo compact />
           <p>
-            Points are virtual and do not represent money. All revenue metrics
-            start at €0.00 until real conversions exist.
+            Os pontos são virtuais e não representam dinheiro. Todos os valores de
+            receita começam em €0.00 até existirem conversões reais.
           </p>
           <div className="flex gap-4">
-            <Link to="/business" className="hover:text-foreground">Business</Link>
-            <Link to="/settings" className="hover:text-foreground">Settings</Link>
+            <Link to="/business" className="hover:text-foreground">Empresas</Link>
+            <Link to="/settings" className="hover:text-foreground">Definições</Link>
           </div>
         </div>
       </footer>
