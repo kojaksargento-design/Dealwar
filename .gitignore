@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Local env files
+.*env*
+.env*
+
+# Platform runtime state (not needed on GitHub)
+.convex/
+.vly-run/
+
+# Deploy artifacts
+dealwar-export.tar.gz
+dealwar-export.zip
+
+# OS junk
+.DS_Store
+Thumbs.db

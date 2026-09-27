@@ -1,0 +1,17 @@
+{
+  "name": "DEALWAR — The Price Battle",
+  "short_name": "DEALWAR",
+  "description": "Find a deal. Beat the price. Win the war. Community price wars and verified deal hunting.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#eef4fb",
+  "theme_color": "#eef4fb",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
