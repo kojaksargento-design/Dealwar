@@ -259,6 +259,10 @@ const schema = defineSchema(
       .index("by_createdAt", ["createdAt"])
       .index("by_store_createdAt", ["storeId", "createdAt"]),
 
+    // A claim that was approved grants this catalog badge (seeded by
+    // seed.upsertCatalog alongside the 10 spec badges).
+    // key: "victory_buyer" — see src/convex/purchasePrize.ts
+
     conversions: defineTable({
       clickId: v.id("affiliateClicks"),
       profileId: v.optional(v.id("profiles")),
@@ -310,6 +314,24 @@ const schema = defineSchema(
     })
       .index("by_sessionId", ["stripeSessionId"])
       .index("by_createdAt", ["createdAt"]),
+
+    // Virtual purchase prize claims: a hunter who actually BOUGHT a product
+    // they discovered through DEALWAR submits proof and, after owner/admin
+    // verification, earns the exclusive "Victory" badge + XP. The prize is
+    // VIRTUAL (badge + XP) — never money, per the honesty rules.
+    purchaseClaims: defineTable({
+      profileId: v.id("profiles"),
+      warId: v.optional(v.id("wars")),
+      storeName: v.string(),
+      amountPaid: v.optional(v.number()), // cents, self-reported
+      proofUrl: v.string(),
+      note: v.optional(v.string()),
+      status: v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected")),
+      reviewedAt: v.optional(v.number()),
+      createdAt: v.number(),
+    })
+      .index("by_status_createdAt", ["status", "createdAt"])
+      .index("by_profile_createdAt", ["profileId", "createdAt"]),
 
     businesses: defineTable({
       ownerProfileId: v.id("profiles"),
