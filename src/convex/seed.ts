@@ -21,6 +21,7 @@ type MissionSeed = {
 };
 
 const BADGES: BadgeSeed[] = [
+  { key: "victory_buyer", name: "Victory", description: "Bought a product discovered on DEALWAR — Verified Buyer.", emoji: "🥇", sort: 0 },
   { key: "first_war", name: "First War", description: "Created your first Price War.", emoji: "⚔️", sort: 1 },
   { key: "first_win", name: "First Win", description: "Held the best price in a war.", emoji: "🏆", sort: 2 },
   { key: "price_hunter", name: "Price Hunter", description: "First verified discovery.", emoji: "🎯", sort: 3 },
