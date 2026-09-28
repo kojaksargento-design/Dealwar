@@ -8,6 +8,8 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { Logo } from "@/components/dealwar/Logo";
 import { ArrowRight, Loader2, Mail, UserX } from "lucide-react";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { Suspense, useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 
@@ -35,11 +37,25 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Viral loop: after successful auth, consume any stored invite code so the
+  // newcomer gets the +50 XP welcome boost and the inviter their reward.
+  const claimInvite = useMutation(api.referrals.claimInvite);
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
+      try {
+        const ref = localStorage.getItem("dealwar.ref");
+        if (ref) {
+          localStorage.removeItem("dealwar.ref");
+          void claimInvite({ code: ref }).catch(() => {
+            /* best-effort: invalid/expired codes are ignored */
+          });
+        }
+      } catch {
+        // storage unavailable
+      }
       navigate(redirect, { replace: true });
     }
-  }, [authLoading, isAuthenticated, navigate, redirect]);
+  }, [authLoading, isAuthenticated, navigate, redirect, claimInvite]);
 
   const handleEmailSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
