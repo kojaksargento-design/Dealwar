@@ -340,6 +340,8 @@ export const create = mutation({
       missionKey: "create_a_war",
       amount: 1,
     });
+    // Viral loop: reward the inviter when a referred hunter creates their first war.
+    await ctx.runMutation(internal.referrals.onInviteeFirstWar, { profileId: profile._id });
 
     await ctx.db.insert("analyticsEvents", {
       name: "war_create",
