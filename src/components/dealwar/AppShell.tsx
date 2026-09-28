@@ -11,6 +11,7 @@ import {
   Plus,
   Trophy,
   User,
+  UserPlus,
   Compass,
   Flame,
   Briefcase,
@@ -42,7 +43,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     { to: "/wars", label: t("navExplore"), icon: Compass },
     { to: "/trending", label: t("navTrending"), icon: Flame },
     { to: "/ranking", label: t("navRanking"), icon: Trophy },
-    { to: "/business", label: t("navBusiness"), icon: Briefcase },
+    { to: "/affiliate", label: t("navBusiness"), icon: Briefcase },
     { to: "/profile", label: t("navProfile"), icon: User },
   ];
 
@@ -173,6 +174,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/victory")}>
                     <Trophy className="mr-2 size-4" /> {t("vcTitle")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/invite")}>
+                    <UserPlus className="mr-2 size-4" /> Convidar amigos (+XP)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/affiliate")}>
+                    <Briefcase className="mr-2 size-4" /> Ganhar dinheiro (afiliados)
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/owner")}>
                     <Activity className="mr-2 size-4" /> {t("ownerDashboard")}
