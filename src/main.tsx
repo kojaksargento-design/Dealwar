@@ -25,6 +25,8 @@ const Business = lazy(() => import("./pages/Business.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
 const Owner = lazy(() => import("./pages/Owner.tsx"));
 const Victory = lazy(() => import("./pages/Victory.tsx"));
+const Invite = lazy(() => import("./pages/Invite.tsx"));
+const Affiliate = lazy(() => import("./pages/Affiliate.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
 const Layout = lazy(() => import("@/components/dealwar/Layout.tsx").then((m) => ({ default: m.Layout })));
 
@@ -149,6 +151,8 @@ createRoot(document.getElementById("root")!).render(
               <Route element={<Layout />}>
                 <Route path="/wars" element={<Wars />} />
               <Route path="/victory" element={<Victory />} />
+              <Route path="/invite" element={<Invite />} />
+              <Route path="/affiliate" element={<Affiliate />} />
                 <Route path="/war/:slug" element={<WarDetail />} />
                 <Route path="/trending" element={<Trending />} />
                 <Route path="/ranking" element={<Ranking />} />
