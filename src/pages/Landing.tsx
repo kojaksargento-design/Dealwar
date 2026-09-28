@@ -52,6 +52,25 @@ export default function Landing() {
   const navigate = useNavigate();
   const { t } = useI18n();
   const [q, setQ] = useState("");
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
+
+  // Viral loop: capture ?ref=CODE from invite links and persist it until the
+  // new hunter signs up, when referrals.claimInvite consumes it.
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get("ref");
+      if (ref && /^DW-[A-Z2-9]{6}$/i.test(ref)) {
+        localStorage.setItem("dealwar.ref", ref.toUpperCase());
+        setInviteCode(ref.toUpperCase());
+      } else {
+        const saved = localStorage.getItem("dealwar.ref");
+        if (saved) setInviteCode(saved);
+      }
+    } catch {
+      // storage unavailable
+    }
+  }, []);
 
   const openWars = useQuery(api.wars.listOpen, { limit: 6 });
   const trending = useQuery(api.wars.listTrending, { limit: 3 });
@@ -95,6 +114,21 @@ export default function Landing() {
           </div>
         </div>
       </header>
+
+      {/* Banner de convite (quando chega por link ?ref=) */}
+      {inviteCode && (
+        <div className="mx-auto max-w-6xl px-4 pt-6">
+          <div className="glass-strong flex flex-wrap items-center gap-3 rounded-3xl border-primary/40 p-4">
+            <span className="text-xl">🎯</span>
+            <p className="min-w-0 flex-1 text-sm font-semibold">
+              Foste convido a caçar! Cria a conta e recebe <span className="font-black text-primary">+50 XP</span> de boas-vindas.
+            </p>
+            <Button size="sm" className="rounded-full font-bold" asChild>
+              <Link to="/auth?returnTo=%2Fwars">Resgatar +50 XP</Link>
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Hero */}
       <section className="relative mx-auto max-w-6xl px-4 pb-14 pt-14 md:pt-20">
