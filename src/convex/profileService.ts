@@ -2,6 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import type { MutationCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
+import { ensureReferralCode } from "./referrals";
 
 /**
  * Server-side profile bootstrap. Every mutation that needs a hunter profile
@@ -53,8 +54,14 @@ export async function getOrCreateProfile(
     wins: 0,
     discoveries: 0,
     shares: 0,
+    affiliateBalance: 0,
+    affiliatePartner: false,
+    inviteCount: 0,
     createdAt: Date.now(),
   });
+
+  // Viral loop: every hunter gets an invite code on day one.
+  await ensureReferralCode(ctx, id);
 
   // Guarantee the badge/mission catalogs exist for every real user. Idempotent,
   // cheap, and removes the dependency on the demo seeder ever having run.
