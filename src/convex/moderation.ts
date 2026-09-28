@@ -252,6 +252,8 @@ export const approveSubmission = mutation({
         });
         // wins counter: user now holds the best price
         await ctx.db.patch(profile._id, { wins: profile.wins + 1 });
+        // Viral loop: reward the inviter when a referred hunter wins their first hunt.
+        await ctx.runMutation(internal.referrals.onInviteeFirstWin, { profileId: profile._id });
         await ctx.runMutation(internal.missions.bumpMission, {
           missionKey: "beat_a_price",
           amount: 1,
