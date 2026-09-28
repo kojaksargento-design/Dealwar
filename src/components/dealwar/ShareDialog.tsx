@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import {
   Dialog,
   DialogContent,
@@ -28,7 +30,14 @@ export function ShareDialog({
   trigger?: React.ReactNode;
 }) {
   const [copied, setCopied] = useState(false);
-  const url = `${window.location.origin}/war/${slug}`;
+
+  // Viral loop: every shared victory carries the hunter's invite code, so
+  // friends who sign up through it count as recruits (+XP both ways).
+  const myStats = useQuery(api.referrals.getMyStats, {});
+  const code = myStats?.code ?? null;
+  const url = code
+    ? `${window.location.origin}/war/${slug}?ref=${code}`
+    : `${window.location.origin}/war/${slug}`;
   const text = `I BEAT THE WAR — ${warTitle}: ${eur(originalPrice)} ↓ ${eur(bestPrice)}. You can beat me? ⚔️ DEALWAR`;
 
   const channels = [
