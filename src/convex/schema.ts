@@ -63,12 +63,26 @@ const schema = defineSchema(
       isAdmin: v.optional(v.boolean()),
       suspended: v.optional(v.boolean()),
       demo: v.optional(v.boolean()),
+
+      // Viral growth: unique invite code + who invited this user. Rewards are
+      // XP only (virtual, honesty rules) — handled by referrals.ts.
+      referralCode: v.optional(v.string()), // unique, e.g. "DW-AB3D9K"
+      referredByProfileId: v.optional(v.id("profiles")),
+      inviteCount: v.optional(v.number()), // signups via this user's code
+
+      // User-affiliate program: users share partner-store links and earn a
+      // commission share when someone BUYS through their link. Balance in
+      // cents, server-managed only; payout requested → owner pays manually.
+      affiliateBalance: v.optional(v.number()), // cents
+      affiliatePartner: v.optional(v.boolean()), // joined the program
+
       createdAt: v.number(),
     })
       .index("by_userId", ["userId"])
       .index("by_username", ["username"])
       .index("by_xp", ["xp"])
-      .index("by_createdAt", ["createdAt"]),
+      .index("by_createdAt", ["createdAt"])
+      .index("by_referralCode", ["referralCode"]),
 
     categories: defineTable({
       name: v.string(),
@@ -241,7 +255,8 @@ const schema = defineSchema(
     // stay at CLICKED until a real network confirms. Commission is NEVER
     // presented as confirmed without network confirmation.
     affiliateClicks: defineTable({
-      profileId: v.optional(v.id("profiles")),
+      profileId: v.optional(v.id("profiles")), // who clicked
+      referrerProfileId: v.optional(v.id("profiles")), // user-affiliate who shared the link (earns commission share)
       warId: v.optional(v.id("wars")),
       productId: v.optional(v.id("products")),
       storeId: v.optional(v.id("stores")),
@@ -387,6 +402,52 @@ const schema = defineSchema(
       meta: v.optional(v.string()),
       createdAt: v.number(),
     }).index("by_createdAt", ["createdAt"]),
+
+    // Reward log for invite referrals: XP granted to inviter/invitee at signup
+    // and at milestones. Virtual only — never money.
+    referralRewards: defineTable({
+      inviterProfileId: v.id("profiles"),
+      inviteeProfileId: v.optional(v.id("profiles")),
+      code: v.string(),
+      type: v.union(v.literal("signup"), v.literal("invitee_first_war"), v.literal("invitee_first_win")),
+      xpAwarded: v.number(),
+      createdAt: v.number(),
+    }).index("by_inviter_createdAt", ["inviterProfileId", "createdAt"]),
+
+    // User-affiliate conversions: a click attributed to a user's share link
+    // that a store network later confirms as a sale. commission is in cents
+    // and ONLY set by owner/admin confirmation from the network dashboard —
+    // never simulated. userShare (70%) credits the user's affiliateBalance.
+    affiliateConversions: defineTable({
+      clickId: v.optional(v.id("affiliateClicks")),
+      referrerProfileId: v.id("profiles"), // user who shared the link
+      storeId: v.optional(v.id("stores")),
+      storeLabel: v.string(), // e.g. "Temu", "Amazon", "Shein"
+      orderValue: v.optional(v.number()), // cents, from network report
+      commission: v.optional(v.number()), // cents, total commission
+      userShare: v.optional(v.number()), // cents credited to the user
+      status: v.union(v.literal("pending"), v.literal("confirmed"), v.literal("rejected")),
+      note: v.optional(v.string()),
+      createdAt: v.number(),
+      confirmedAt: v.optional(v.number()),
+    })
+      .index("by_referrer_createdAt", ["referrerProfileId", "createdAt"])
+      .index("by_status", ["status"]),
+
+    // Payout requests: user asks to withdraw their affiliate balance. The
+    // owner pays via MB Way/bank and marks it paid — money only moves
+    // off-platform records, never auto-sent.
+    payoutRequests: defineTable({
+      profileId: v.id("profiles"),
+      amount: v.number(), // cents
+      method: v.union(v.literal("mbway"), v.literal("bank")),
+      contact: v.string(), // phone / IBAN provided by the user
+      status: v.union(v.literal("requested"), v.literal("paid"), v.literal("cancelled")),
+      createdAt: v.number(),
+      paidAt: v.optional(v.number()),
+    })
+      .index("by_status_createdAt", ["status", "createdAt"])
+      .index("by_profile_createdAt", ["profileId", "createdAt"]),
 
     analyticsEvents: defineTable({
       name: v.string(),
