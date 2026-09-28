@@ -20,6 +20,8 @@ import {
   Loader2,
   RefreshCw,
   Banknote,
+  TrendingUp,
+  Check,
 } from "lucide-react";
 import { eur, eurToCents, timeAgo } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -97,6 +99,12 @@ export default function Owner() {
   const [source, setSource] = useState("");
   const [note, setNote] = useState("");
   const recordPayment = useMutation(api.owner.recordManualPayment);
+  const registerConversion = useMutation(api.affiliateProgram.registerConversion);
+  const markPayoutPaid = useMutation(api.affiliateProgram.markPayoutPaid);
+  const payouts = useQuery(api.affiliateProgram.listPayoutsAdmin, ready ? {} : "skip");
+  const [convCode, setConvCode] = useState("");
+  const [convStore, setConvStore] = useState("");
+  const [convCommission, setConvCommission] = useState("");
 
   // Sponsorship leads queue (owner-only)
   const leads = useQuery(api.sponsorLeads.listLeads, ready ? {} : "skip");
@@ -328,6 +336,100 @@ export default function Owner() {
                 ))}
               </ul>
             )}
+          </div>
+        </section>
+
+        {/* Afiliados: registar conversão real + fila de saques */}
+        <section className="glass rounded-3xl p-5">
+          <p className="text-sm font-black tracking-tight">💸 Afiliados — registar comissão real</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Introduz o valor REAL do painel da rede (Awin/Admitad/Amazon). O caçador recebe 70% no saldo dele.
+          </p>
+          <form
+            className="mt-3 grid gap-2 sm:grid-cols-[150px_1fr_120px_110px_auto]"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              try {
+                const value = parseFloat(convCommission.replace(",", "."));
+                if (!Number.isFinite(value) || value <= 0) throw new Error("Comissão inválida.");
+                await registerConversion({
+                  referrerCode: convCode.trim().toUpperCase(),
+                  storeLabel: convStore,
+                  commission: Math.round(value * 100),
+                });
+                toast.success("Conversão registada: caçador creditado com 70%.");
+                setConvCode("");
+                setConvStore("");
+                setConvCommission("");
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Erro.");
+              }
+            }}
+          >
+            <Input
+              value={convCode}
+              onChange={(e) => setConvCode(e.target.value)}
+              placeholder="DW-XXXXXX"
+              required
+              className="glass-subtle rounded-xl"
+              aria-label="Código do afiliado"
+            />
+            <Input
+              value={convStore}
+              onChange={(e) => setConvStore(e.target.value)}
+              placeholder="Loja (Temu, Amazon...)"
+              required
+              maxLength={60}
+              className="glass-subtle rounded-xl"
+              aria-label="Loja da conversão"
+            />
+            <Input
+              value={convCommission}
+              onChange={(e) => setConvCommission(e.target.value)}
+              placeholder="Comissão €"
+              inputMode="decimal"
+              required
+              className="glass-subtle rounded-xl"
+              aria-label="Comissão em euros"
+            />
+            <Button type="submit" className="rounded-xl bg-emerald-600 font-black hover:bg-emerald-700">
+              <TrendingUp className="mr-1 size-4" /> Registar
+            </Button>
+            <span />
+          </form>
+
+          <div className="mt-4 border-t border-white/40 pt-3">
+            <p className="text-sm font-black tracking-tight">📤 Pedidos de saque</p>
+            {payouts === undefined && <Skeleton className="mt-2 h-16 rounded-2xl" />}
+            {payouts?.length === 0 && (
+              <p className="mt-2 text-xs text-muted-foreground">Sem pedidos de saque.</p>
+            )}
+            <ul className="mt-2 flex flex-col gap-2">
+              {payouts?.map((p) => (
+                <li key={p._id} className="glass-subtle flex items-center gap-3 rounded-xl px-3 py-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold">@{p.username} — {eur(p.amount)}</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {p.method === "mbway" ? "MB Way" : "Transferência"}: {p.contact}
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    className="rounded-xl bg-emerald-600 font-black hover:bg-emerald-700"
+                    onClick={async () => {
+                      try {
+                        await markPayoutPaid({ payoutId: p._id as never });
+                        toast.success("Saque marcado como pago.");
+                      } catch (err) {
+                        toast.error(err instanceof Error ? err.message : "Erro.");
+                      }
+                    }}
+                  >
+                    <Check className="mr-1 size-3.5" /> Pago
+                  </Button>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
 
